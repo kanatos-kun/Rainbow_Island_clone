@@ -1,81 +1,60 @@
 local game = {}
-game.load = function()
-  
+
+--module
+local customlayer = require("state.customlayer")
+local collision = require("state.collision")
 -- variable global
--- Charge image
-local img = {
-  player = love.graphics.newImage("asset/image/sprite/player/player.png")
-  }
+local list_tile = {}
+world = bump.newWorld(16)
+
+game.load = function()
+
 -- liste
 local list_sprite = {}
 
-map = sti("asset/map/map_test.lua")
-local spriteLayer = map:addCustomLayer("Sprite Layer",3)
 
-local player
-for k,object in pairs (map.objects) do
-  if object.name == "player" then
-   player = object
-   break
-   end
-end
-
--- Initialization des sprites
-spriteLayer.player = {
-  sprite = img.player,
-  x      = player.x,
-  y      = player.y,
-  ox     = img.player:getWidth()/2,
-  oy     = 0,
-  width  = img.player:getWidth(),
-  height = img.player:getHeight(),
-  }
-
-
-spriteLayer.update = function(self,dt)
--- 96 pixel /second
-local speed = 96 
-print(dt)
-    if love.keyboard.isDown("right") then
-    self.player.x = self.player.x  + speed * dt
-    end
-
-    if love.keyboard.isDown("left") then
-    self.player.x = self.player.x - speed * dt
-    end
-
-    if love.keyboard.isDown("up") then
-    self.player.y = self.player.y - speed * dt
-    end
-
-    if love.keyboard.isDown("down") then
-    self.player.y = self.player.y + speed * dt
-    end
-
-end
-
-spriteLayer.draw = function(self)
-  local s = self.player
-  love.graphics.draw(s.sprite,s.x,s.y,0,1,1,s.ox,s.oy)
-end
+map = sti("asset/map/map_test.lua", {"bump"})
+customlayer.load()
+collision.load()
+map:bump_init(world)
 
 map:removeLayer("objet")
-
 end
 
+game.tileInitialize = function(pX,pY,pW,pH,pType)
+  tile = {
+    x = pX,
+    y = pY,
+    width = pW,
+    height = pH,
+    ["type"] = pType,
+  }
+  table.insert(list_tile,tile)
+end
 
 
 game.update = function(dt)
   map:update(dt)
+  debug.update(dt)
 end
 
 
 game.draw = function()
   map:draw()
+  map:bump_draw()
+  debug.draw()
 end
 
-
-game.keypressed = function()
+game.keypressed = function(key)
+debug.keypressed(key)
+--Show debug in game screen
+  if key == "x" then
+    if debug.state then 
+      debug.state = false
+      else
+      debug.state = true 
+    end
+  end
 
 end
 
