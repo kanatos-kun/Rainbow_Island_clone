@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="42" height="32" tilewidth="16" tileheight="16" nextobjectid="10">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="42" height="32" tilewidth="16" tileheight="16" nextobjectid="13">
  <tileset firstgid="1" name="spritesheet_base_collision" tilewidth="16" tileheight="16" tilecount="16" columns="4">
   <image source="../image/spritesheet/spritesheet_base_collision.png" width="64" height="64"/>
   <tile id="2">
@@ -52,5 +52,7 @@
  <objectgroup name="objet" offsetx="0.454545" offsety="-1.81818">
   <object id="1" name="player" x="21.75" y="215.75" width="17" height="21"/>
   <object id="6" name="ennemy" x="622.628" y="211.568" width="17" height="21"/>
+  <object id="11" name="ennemy" x="512.628" y="65.568" width="17" height="21"/>
+  <object id="12" name="ennemy" x="281.628" y="214.568" width="17" height="21"/>
  </objectgroup>
 </map>

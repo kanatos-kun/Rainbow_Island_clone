@@ -3,7 +3,8 @@ local customlayer = {}
 customlayer.load = function()
 -- Charge image
   local img = {ennemy = love.graphics.newImage("asset/image/sprite/ennemy/ennemy.png")}
--- gravité
+
+  local ennemy  = require "state.ennemy"
 
 
   local spriteLayer = map:addCustomLayer("Sprite Layer",3)
@@ -11,7 +12,7 @@ customlayer.load = function()
   --Variable global
    spriteLayer.gravity = -850
    spriteLayer.list_sprite = {}
-   spriteLayer.list_ennemy = {}
+   spriteLayer.list_ennemy = ennemy.list_ennemy
   -- Put all function for spriteLayer---------------------
 
 --===========================================
@@ -60,11 +61,10 @@ customlayer.load = function()
    end
   --------------------------------------------------------
   local  player = require "state.player"
-  local ennemy  = require "state.ennemy"
   
   --Initialization des sprites----------------------------
   spriteLayer.player = player.initialize(spriteLayer)
-  spriteLayer.ennemy = ennemy.initialize(spriteLayer)
+ -- spriteLayer.ennemy = ennemy.initialize(spriteLayer)
   --------------------------------------------------------
   spriteLayer.update = function(self,dt)
   player.update(self,dt)
