@@ -71,9 +71,9 @@ debug.initialize = function()
      end
   --rainbow 
  if not debug[1].player.creerRainbow  then
-      print("Aucun arc-en-ciel n'a été créer")
+--      print("Aucun arc-en-ciel n'a été créer")
   else
-      print("un ou plusieur arc-en-ciel ont été générée")
+--      print("un ou plusieur arc-en-ciel ont été générée")
       for i = 1,#debug[1].player.list_rainbow do
         debug.id.rainbow_chain[#debug.id.rainbow_chain + 1] = i
       end
@@ -152,8 +152,8 @@ local gfx = love.graphics
               "height  : "..tile[idTile].height.."\n"..
               "type  :  "..tile[idTile]["type"].."\n"
       elseif ennemy[1] ~= nil and choice == 5 then
-        text ="x  : "..math.floor(tostring(ennemy[idEnnemy].x)).."\n".. 
-              "y  : "..math.floor(tostring(ennemy[idEnnemy].y)).."\n"..
+        text ="x  : "..math.floor(tostring(ennemy[idEnnemy].pos.x)).."\n".. 
+              "y  : "..math.floor(tostring(ennemy[idEnnemy].pos.y)).."\n"..
               "width  : "..tostring(ennemy[idEnnemy].width).."\n"..
               "height  : "..tostring(ennemy[idEnnemy].height).."\n"..
               "ox  : "..tostring(ennemy[idEnnemy].ox).."\n"..
@@ -165,21 +165,28 @@ local gfx = love.graphics
               "sleep  : "..(tostring(ennemy[idEnnemy].sleep)).."\n"..
               "ground  : "..(tostring(ennemy[idEnnemy].ground)).."\n"
       elseif player ~= nil and choice == 4 then
-        text =               "x  : "..math.floor(player.x).."\n"..
-              "y  : "..math.floor(player.y).."\n"..
+        text =               "x  : "..math.floor(player.pos.x).."\n"..
+              "y  : "..math.floor(player.pos.y).."\n"..
               "width : "..(player.width).."\n"..
               "height : "..(player.height).."\n"..
               "ox : "..(player.ox).."\n"..
               "oy : "..(player.oy).."\n"..
+              "dir : "..(player.dir).."\n"..
               "jump : "..(tostring(player.boolJump)).."\n"..
+              "on_rainbow : "..(tostring(player.onRainbow)).."\n"..
+              "descente_rainbow1 : "..(tostring(player.descenteRainbow1)).."\n"..
+              "descente_rainbow2 : "..(tostring(player.descenteRainbow2)).."\n"..
+              "theresRainbow? : "..(tostring(player.theresRainbow)).."\n"..
               "velocity_y : "..math.floor(player.velocity_y).."\n"
       elseif rainbow[1] ~= nil and choice == 6 then
-      text = "x  : "..math.floor(tostring(rainbow[idRainbow].x)).."\n"..
-              "y  : "..math.floor(tostring(rainbow[idRainbow].y)).."\n"..
+      text = "x  : "..math.floor(tostring(rainbow[idRainbow].pos.x)).."\n"..
+              "y  : "..math.floor(tostring(rainbow[idRainbow].pos.y)).."\n"..
               "width : "..(tostring(rainbow[idRainbow].width)).."\n"..
               "height : "..(tostring(rainbow[idRainbow].height)).."\n"..
+              "dir : "..(tostring(rainbow[idRainbow].dir)).."\n"..
               "ox : "..(tostring(rainbow[idRainbow].ox)).."\n"..
-              "oy : "..(tostring(rainbow[idRainbow].oy)).."\n"
+              "oy : "..(tostring(rainbow[idRainbow].oy)).."\n"..
+              "rainbowCross : "..(tostring(rainbow[idRainbow].rainbowCross)).."\n"
       else
       text = ""
       end
@@ -286,17 +293,17 @@ returnBumpText()
   elseif grp == "player" and player ~= nil then
     local x2,y2,w2,h2 = world:getRect(player)
     gfx.setColor(255,37,37,127)
-    gfx.rectangle("fill",player.x,player.y,player.width,player.height)
+    gfx.rectangle("fill",player.pos.x,player.pos.y,player.width,player.height)
     gfx.setColor(116,13,103,180)
     gfx.rectangle("fill",x2,y2,w2,h2)
     gfx.setColor(255,255,255,255)
-    gfx.circle("fill",player.x,player.y,2)
+    gfx.circle("fill",player.pos.x,player.pos.y,2)
   elseif grp == "ennemy" and ennemy[1] ~= nil then
     local x3,y3,w3,h3 = world:getRect(ennemy[idEnnemy])
     gfx.setColor(37,145,255,127)
-    gfx.rectangle("fill",ennemy[idEnnemy].x,ennemy[idEnnemy].y,ennemy[idEnnemy].width,ennemy[idEnnemy].height)
+    gfx.rectangle("fill",ennemy[idEnnemy].pos.x,ennemy[idEnnemy].pos.y,ennemy[idEnnemy].width,ennemy[idEnnemy].height)
     gfx.setColor(255,255,255,255)
-    gfx.circle("fill",ennemy[idEnnemy].x,ennemy[idEnnemy].y,2)
+    gfx.circle("fill",ennemy[idEnnemy].pos.x,ennemy[idEnnemy].pos.y,2)
     if option[2] then
       gfx.setColor(39,13,116,180)
       gfx.rectangle("fill",x3,y3,w3,h3)
@@ -304,9 +311,9 @@ returnBumpText()
   elseif grp == "rainbow_chain" and rainbow[1] ~= nil then
     local x4,y4,w4,h4 = world:getRect(rainbow[idRainbow])
     gfx.setColor(37,145,255,127)
-    gfx.rectangle("fill",rainbow[idRainbow].x,rainbow[idRainbow].y,rainbow[idRainbow].width,rainbow[idRainbow].height)
+    gfx.rectangle("fill",rainbow[idRainbow].pos.x,rainbow[idRainbow].pos.y,rainbow[idRainbow].width,rainbow[idRainbow].height)
     gfx.setColor(255,255,255,255)
-    gfx.circle("fill",rainbow[idRainbow].x,rainbow[idRainbow].y,2)
+    gfx.circle("fill",rainbow[idRainbow].pos.x,rainbow[idRainbow].pos.y,2)
       if option[2] then
         gfx.setColor(39,13,116,180)
         gfx.rectangle("fill",x4,y4,w4,h4)
@@ -314,13 +321,17 @@ returnBumpText()
 end
 
   if option[1] and option[2] then-- show/enable all collision bump 
+    gfx.setColor(240,140,120,120)
     if player ~= nil then
     local x1,y1,w1,h1 = world:getRect(player)
-    gfx.setColor(240,140,120,120)
+    local x2,y2,w2,h2 = world:getRect(player.detect)
     gfx.rectangle("fill",x1,y1,w1,h1)
+    gfx.setColor(0,255,0,200)
+    gfx.rectangle("fill",x2,y2,w2,h2)
    end
   
     if tile[1] ~= nil then
+    gfx.setColor(240,140,120,120)
       for n = 1,#tile do
         local x2,y2,w2,h2 = world:getRect(tile[n])
         gfx.rectangle("fill",x2,y2,w2,h2)
@@ -337,9 +348,22 @@ end
     if rainbow[1] ~= nil then
       for n = 1,#rainbow do
        local x4,y4,w4,h4 = world:getRect(rainbow[n])
+       local x6,y6,w6,h6 = world:getRect(rainbow[n].detect)
+       local x7,y7,w7,h7 = world:getRect(rainbow[n].detect2)
+        gfx.setColor(240,140,120,120)
         gfx.rectangle("fill",x4,y4,w4,h4)
+        gfx.setColor(255,0,0,255)
+        gfx.rectangle("fill",x6,y6,w6,h6)
+        gfx.setColor(0,0,255,255)
+        gfx.rectangle("fill",x7,y7,w7,h7)
+        if rainbow[n].bullet.display then
+          local x5,y5,w5,h5 = world:getRect(rainbow[n].bullet)
+          gfx.setColor(0,0,255,255)
+          gfx.rectangle("fill",x5,y5,w5,h5)
+        end
       end
     end
+    
   end
 
   end
