@@ -96,6 +96,7 @@ local trace = false
               if other.type == "one_way_s" then return 'slide' end
               if other.type == "change_direction" then return 'slide' end
               if other.type == "bullet" then return 'cross' end
+              if other.type == "rainbow_bullet" then return 'cross' end
               end
       e.no_collision = true
 
@@ -162,7 +163,8 @@ local trace = false
                cols.other.type == "one_way_s") and
                cols.normal.y == -1 then
             end
-            if cols.other.type == "bullet" then
+            if  (cols.other.type == "bullet" or
+                cols.other.type == "rainbow_bullet") then
               e.display = false
             end
       end

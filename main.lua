@@ -13,6 +13,8 @@ anim8 = require 'libs.anim8'
 bump  = require 'libs.bump'
 class = require 'libs.middleclass'
 vector = require 'libs.vector'
+timer = require 'libs.timer'
+gamestate = require 'libs.gamestate'
 game  = require 'state.game'
 debug = require 'state.debug'
 require 'state.util'
@@ -22,11 +24,13 @@ function love.load()
   game.load()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
+  --testTimer = timer.new()
   debug.initialize()
 end
 
 function love.update(dt)
   game.update(dt)
+  timer.update(dt)
 end
 
 function love.draw()
