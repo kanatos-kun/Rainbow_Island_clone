@@ -22,6 +22,7 @@ require 'state.util'
 
 function love.load()
   game.load()
+  --gamestate.registerEvents()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
   --testTimer = timer.new()

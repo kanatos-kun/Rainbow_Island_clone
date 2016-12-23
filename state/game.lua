@@ -1,5 +1,5 @@
 local game = {}
-
+--game = gamestate.new()
 --module
 local customlayer = require("state.customlayer")
 local collision = require("state.collision")
