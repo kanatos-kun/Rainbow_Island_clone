@@ -16,4 +16,6 @@ les commandes :
       
  Il y a pas mal de bug, lorsque vous changer de level, les hitbox ne s'efface pas ce qui peut entrainer des inconveniants.
  Quelque fois votre personnage peut rester bloqué dans le décor, dans ce cas là faites sautez votre personnage et ça se corrigera.
+ Pour les asset j'ai utilisé les gfx de GrafxKid : 
+ http://opengameart.org/users/grafxkid
  Bon jeux !
