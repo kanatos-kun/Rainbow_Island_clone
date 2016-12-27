@@ -48,15 +48,14 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
 
   function Rainbow:chrono()
     print("chrono rainbow initialize")
-    local handle = timer.after(10,function()
+    local handle = timer.after(5,function()
     print("fickle rainbow initialize")
         self:fickle() 
         end)
   end
   
   function Rainbow:fickle()
-    local handle = timer.during(3,function()
-    print("fickle image")
+    local handle = timer.during(2,function()
     end,
     function()
       self:destroy()
@@ -73,6 +72,10 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
   function Rainbow:breaking()
   -- expand the hitbox rainbow to the bottom and kill ennemy so "rainbow" => "bullet"
   -- supprimer les detecteurs ou les rendres incapacitants
+  --timer.clear()
+  local handle = timer.after(0.5,function()
+      self:destroy()
+      end)
   end
 
   function Rainbow:collision(dt)
@@ -98,6 +101,7 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
       self.detect.type = ""
       self.detect2.type = ""
       self.type = "rainbow_bullet"
+      self:breaking()
       local newX,newY,newWidth,newHeight = self.pos.x,self.pos.y - 25,self.width,(hauteur - self.height)
       world:update(self,newX,newY,newWidth,newHeight)
         end

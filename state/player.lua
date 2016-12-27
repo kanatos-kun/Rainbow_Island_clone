@@ -1,5 +1,6 @@
 local Rainbow = require ('state.rainbow')
 local Player = class('Player')
+local id = 1
 
 local rainbow = ""
 local img = {  player = love.graphics.newImage("asset/image/sprite/player/player.png"),
@@ -8,7 +9,7 @@ local sprite = {}
   --==============================================================
   --            [INITIALIZE]
   --==============================================================
-function Player:initialize()
+function Player:initialize(pId)
   for k,object in pairs (map.objects) do
     if object.name == "player" then
    sprite = object
@@ -39,6 +40,8 @@ function Player:initialize()
   self.theresRainbow = false
   self.detection_descente = false
   self.isFalling = false
+  self.finDeLevel = false
+  self.id = pId
   self.list_rainbow = {}
   self.detect = {
     pos = self.pos - vector(0,self.height/2),
@@ -56,11 +59,14 @@ world:add(self,self.pos.x,self.pos.y,self.width,self.height)
 end
 
 function Player:update(dt)
+  if not self.finDeLevel then
   self:move(dt)
   self:collision(dt)
   self:rainbowClimb(dt)
   self:rainbowManage(dt)
+  end
 end
+
 
   --==============================================================
 --                [RAINBOW_MANAGE]
@@ -116,6 +122,8 @@ function Player:move(dt)
       if love.keyboard.isDown("space") then
         if self.velocity_y == 0 then
           self.boolJump = true
+          self.onRainbow = false
+          self.isStop = false
           self.velocity_y = self.jumpHeight
         end
     end
@@ -306,6 +314,7 @@ function Player:collision(dt)
       if other.type == "on_rainbow" then return 'cross' end
       if other.type == "rainbow_detector" then return 'cross' end
       if other.type == "rainbow_detector2" then return 'cross' end
+      if other.type == "end" then return 'cross' end
     end
 
     local goalX, goalY = self.pos.x, self.pos.y
@@ -317,16 +326,23 @@ function Player:collision(dt)
   if cols[i].other.type == "one_way_s"  then
      cols[i].other.type = "one_way"
   end
+        
+   if cols[i].other.type == "end" then
+   self.finDeLevel = true
+  print(self.finDeLevel)
+   end
   
         if (cols[i].other.type == "one_way" and
-            cols[i].normal.y == -1          and
-            math.ceil(self.pos.y + (self.height)) <= cols[i].other.y ) then 
+            cols[i].normal.y == -1         and
+            math.floor(self.pos.y + (self.height - 1)) <= cols[i].other.y ) and
+            not self.onRainbow then 
             cols[i].other.type = "one_way_s" 
           self.isFalling = false
           self.velocity_y = 0
           self.boolJump = false
+          self.onRainbow = false
         elseif cols[i].other.type == "one_way" then
-             cols[i].other.type = "one_way"
+              cols[i].other.type = "one_way"
         end
 
         if (cols[i].other.type == "solid" and
@@ -336,6 +352,7 @@ function Player:collision(dt)
           self.velocity_y = 0
           self.isFalling = false
           self.boolJump = false
+          self.onRainbow = false
         end
 
       if cols[i].other.type == "on_rainbow" and not self.onRainbow then
@@ -425,6 +442,8 @@ function Player:collision(dt)
       cols[i].other.detect.type = ""
       cols[i].other.detect2.type = ""
       cols[i].other.type = "rainbow_bullet"
+      cols[i].other:breaking()
+      self.onRainbow = false
       local newX,newY,newWidth,newHeight = cols[i].other.pos.x,cols[i].other.pos.y - 25,cols[i].other.width,(hauteur - cols[i].other.height)
       world:update(cols[i].other,newX,newY,newWidth,newHeight)
       end
@@ -437,6 +456,7 @@ function Player:collision(dt)
           self.descenteRainbow1 = false
         elseif (cols[i].other.type == "rainbow_detector2" and (self.isFalling)) or
         (cols[i].other.type == "rainbow_detector1" and (self.isFalling)) then
+          self.onRainbow = false
           cols[i].other.type = ""
         end
 
@@ -491,20 +511,21 @@ function Player:collision(dt)
 
 function Player:draw()
     local s = self
-    love.graphics.draw(s.img,s.pos.x,s.pos.y,0,1,1,s.ox,s.oy)
+    love.graphics.draw(s.img,s.pos.x,s.pos.y,0,s.dir,1,s.ox,s.oy)
 
     if self.creerRainbow then
       for n = 1,#s.list_rainbow do
         local r = s.list_rainbow[n]
         local b = s.list_rainbow[n].bullet
+        love.graphics.draw(r.img,r.pos.x - s.width/2,r.pos.y,0,1,1)
+        love.graphics.setColor(255,255,255,255)
         love.graphics.translate(r.pos.x + r.width/2,r.pos.y + r.height)
         if b.display then
         love.graphics.draw(b.img,b.vec.x,b.vec.y,0,1,1)
         end
         love.graphics.translate(-r.pos.x - r.width/2,-r.pos.y - r.height)
-        love.graphics.setColor(0,0,255,200)
-        love.graphics.draw(r.img,r.pos.x - s.width/2,r.pos.y,0,1,1)
-        love.graphics.setColor(255,255,255,255)
+      --  love.graphics.setColor(0,0,255,200)
+
       end
     end
 

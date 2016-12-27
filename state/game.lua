@@ -1,51 +1,46 @@
 local game = {}
+game = gamestate.new()
 --game = gamestate.new()
 --module
 local customlayer = require("state.customlayer")
 local collision = require("state.collision")
+local level = require("state.level")
+game.id = 1
 -- variable global
-local list_tile = {}
-world = bump.newWorld(16)
 
-game.load = function()
+function game:init()
+print("vous êtes dans le jeu")
 
--- liste
-local list_sprite = {}
-
-
-map = sti("asset/map/map_test.lua", {"bump"})
-customlayer.load()
+level.load()
+customlayer.load(game.id)
 collision.load()
-map:bump_init(world)
-
+game.id = level.id
 map:removeLayer("objet")
+
 end
 
-game.tileInitialize = function(pX,pY,pW,pH,pType)
-  tile = {
-    x = pX,
-    y = pY,
-    width = pW,
-    height = pH,
-    ["type"] = pType,
-  }
-  table.insert(list_tile,tile)
+function game:change(dt)
+  if level.id ~= game.id then
+  customlayer.load(level.id)
+  collision.reinitialization()
+  game.id = level.id
+  map:removeLayer("objet")
+  end
 end
 
-
-game.update = function(dt)
-  map:update(dt)
+function game:update(dt)
+  level.update(dt)
+  game:change(dt)
   debug.update(dt)
 end
 
 
-game.draw = function()
-  map:draw()
-  map:bump_draw()
+function game:draw()
+  level.draw()
   debug.draw()
 end
 
-game.keypressed = function(key)
+function game:keypressed(key)
 debug.keypressed(key)
 --Show debug in game screen
   if key == "x" then

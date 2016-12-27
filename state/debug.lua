@@ -178,7 +178,9 @@ local gfx = love.graphics
               "descente_rainbow2 : "..(tostring(player.descenteRainbow2)).."\n"..
               "theresRainbow? : "..(tostring(player.theresRainbow)).."\n"..
               "detection_descente : "..(tostring(player.detection_descente)).."\n"..
+              "isStop : "..(tostring(player.isStop)).."\n"..
               "isFalling : "..(tostring(player.isFalling)).."\n"..
+              "finDeLevel : "..(tostring(player.finDeLevel)).."\n"..
               "velocity_y : "..math.floor(player.velocity_y).."\n"
       elseif rainbow[1] ~= nil and choice == 6 then
       text = "x  : "..math.floor(tostring(rainbow[idRainbow].pos.x)).."\n"..
