@@ -4,10 +4,12 @@ local widthJoueur = 0
 local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbow.png"),
               bullet  = love.graphics.newImage("asset/image/sprite/bullet/bullet.png"),
             }
-
+  --==============================================================
+  --            [INITIALIZE]
+  --==============================================================
   function Rainbow:initialize(pX,pY,pDir)
     self.bullet = Bullet:new(pX,pY-3,pDir)
-    self.pos = vector(pX,pY - 3)
+    self.pos = vector(pX,pY - 11)
     self.img = img.rainbow
     self.width = img.rainbow:getWidth()
     self.height = img.rainbow:getHeight()
@@ -30,7 +32,6 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
       height = 2,
       ["type"] = "rainbow_detector2",
       }
-    self.chrono = 1000
     self.type = "rainbow"
   end
   
@@ -40,11 +41,49 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
     end
   end
   
+  
+  --==============================================================
+  --                     [TIMER]
+  --==============================================================
+
+  function Rainbow:chrono()
+    print("chrono rainbow initialize")
+    local handle = timer.after(5,function()
+    print("fickle rainbow initialize")
+        self:fickle() 
+        end)
+  end
+  
+  function Rainbow:fickle()
+    local handle = timer.during(2,function()
+    end,
+    function()
+      self:destroy()
+  print("destroy rainbow initialize")
+    end
+    )
+  end
+
+  function Rainbow:destroy()
+    print("piece detruite")
+    self.display = false
+  end
+
+  function Rainbow:breaking()
+  -- expand the hitbox rainbow to the bottom and kill ennemy so "rainbow" => "bullet"
+  -- supprimer les detecteurs ou les rendres incapacitants
+  --timer.clear()
+  local handle = timer.after(0.5,function()
+      self:destroy()
+      end)
+  end
+
   function Rainbow:collision(dt)
     local rainbowFilter = function(item,other)
       if other.type == "rainbow" then return 'cross' end
       if other.type == "on_rainbow" then return 'cross' end
       if other.type == "player" then return 'cross' end
+      if other.type == "rainbow_bullet" then return 'cross' end
     end
       local goalX,goalY = self.pos.x,self.pos.y
       local actualX,actualY,cols,len = world:move(self,goalX,goalY,rainbowFilter)
@@ -55,6 +94,16 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
         
         if cols.other.type == "rainbow" or cols.other.type == "on_rainbow" then
           self.rainbowCross = true
+        end
+        
+        if cols.other.type == "rainbow_bullet" then
+      print("destruction rainbow")
+      self.detect.type = ""
+      self.detect2.type = ""
+      self.type = "rainbow_bullet"
+      self:breaking()
+      local newX,newY,newWidth,newHeight = self.pos.x,self.pos.y - 25,self.width,(hauteur - self.height)
+      world:update(self,newX,newY,newWidth,newHeight)
         end
         
         if cols.other.type == "player" and cols.normal.x == 1 then -- || < player
@@ -84,6 +133,7 @@ local img = { rainbow = love.graphics.newImage("asset/image/sprite/bullet/rainbo
   
   function Rainbow:add(pW)
   self.display = true
+  self:chrono()
   widthJoueur = pW
     if self.dir == 1 then
    self.pos.x = (self.pos.x + pW)

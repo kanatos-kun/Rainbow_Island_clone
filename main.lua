@@ -8,29 +8,33 @@ love.graphics.setDefaultFilter("nearest")
 -- Cette ligne permet de déboguer pas à pas dans ZeroBraneStudio
 if arg[#arg] == "-debug" then require("mobdebug").start() end
 
+gamestate = require 'libs.gamestate'
 sti   = require 'libs.sti'
 anim8 = require 'libs.anim8'
 bump  = require 'libs.bump'
 class = require 'libs.middleclass'
 vector = require 'libs.vector'
-game  = require 'state.game'
+timer = require 'libs.timer'
 debug = require 'state.debug'
 require 'state.util'
-
+require 'state.init'
 
 function love.load()
-  game.load()
+ -- game.load()
+  gamestate.registerEvents()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
-  debug.initialize()
+  --testTimer = timer.new()
+ -- debug.initialize()
 end
 
 function love.update(dt)
-  game.update(dt)
+--  game.update(dt)
+  timer.update(dt)
 end
 
 function love.draw()
-    game.draw()
+--    game.draw()
 end
 
 function love.keypressed(key)

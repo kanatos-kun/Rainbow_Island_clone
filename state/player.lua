@@ -1,12 +1,15 @@
 local Rainbow = require ('state.rainbow')
 local Player = class('Player')
+local id = 1
 
 local rainbow = ""
 local img = {  player = love.graphics.newImage("asset/image/sprite/player/player.png"),
 }
 local sprite = {}
-
-function Player:initialize()
+  --==============================================================
+  --            [INITIALIZE]
+  --==============================================================
+function Player:initialize(pId)
   for k,object in pairs (map.objects) do
     if object.name == "player" then
    sprite = object
@@ -35,29 +38,61 @@ function Player:initialize()
   self.descenteRainbow1 = false
   self.descenteRainbow2 = false
   self.theresRainbow = false
+  self.detection_descente = false
+  self.isFalling = false
+  self.finDeLevel = false
+  self.id = pId
   self.list_rainbow = {}
   self.detect = {
     pos = self.pos - vector(0,self.height/2),
     width = 2,
     height = 2,
   }
+  self.detect2 = {
+    pos = self.pos - vector(0,self.height/2),
+    width = 2,
+    height = 2,
+  }
+world:add(self.detect2,self.detect2.pos.x,self.detect2.pos.y,self.detect2.width,self.detect2.height)
 world:add(self.detect,self.detect.pos.x,self.detect.pos.y,self.detect.width,self.detect.height)
 world:add(self,self.pos.x,self.pos.y,self.width,self.height)
 end
 
 function Player:update(dt)
+  if not self.finDeLevel then
   self:move(dt)
   self:collision(dt)
   self:rainbowClimb(dt)
+  self:rainbowManage(dt)
+  end
+end
+
+
+  --==============================================================
+--                [RAINBOW_MANAGE]
+  --==============================================================
+function Player:rainbowManage(dt)
 
   if self.creerRainbow then
-    for i = 1,#self.list_rainbow do
-     local r = self.list_rainbow[i]
-     r:update(dt)
+    if #self.list_rainbow ~= 0 then
+      for i = #self.list_rainbow,1,-1 do
+       local r = self.list_rainbow[i]
+       r:update(dt)
+         if not r.display then
+           world:remove(r)
+           table.remove(self.list_rainbow,i)
+         end
+
+      end
+    else
+      self.creerRainbow = false
     end
   end
 
 end
+  --==============================================================
+  --            [MOVEMENT]
+  --==============================================================
 
 function Player:move(dt)
     -- 96 pixel /second
@@ -76,15 +111,19 @@ function Player:move(dt)
     --update detector 
     if self.dir == 1 then
     self.detect.pos = self.pos + vector(25,self.height/2)
+    self.detect2.pos = self.pos - vector(25,0) + vector(0,self.height/2)
     elseif self.dir == -1 then
     self.detect.pos = self.pos - vector(25,0) + vector(0,self.height/2)
+    self.detect2.pos = self.pos + vector(25,self.height/2)
     end
   world:update(self.detect,self.detect.pos.x,self.detect.pos.y,self.detect.width,self.detect.height)
-
+  world:update(self.detect2,self.detect2.pos.x,self.detect2.pos.y,self.detect2.width,self.detect2.height)
     --Jump
       if love.keyboard.isDown("space") then
         if self.velocity_y == 0 then
           self.boolJump = true
+          self.onRainbow = false
+          self.isStop = false
           self.velocity_y = self.jumpHeight
         end
     end
@@ -144,6 +183,7 @@ function Player:move(dt)
           self.velocity_y = self.velocity_y - (self.gravity * dt)
         end
         self.pos.y = self.pos.y + self.velocity_y * dt
+        self.isFalling = true
       end
 
       if self.velocity_y ~= 0 then
@@ -152,6 +192,7 @@ function Player:move(dt)
         else
         self.velocity_y = self.velocity_y - (self.gravity * dt)
         end
+        if self.velocity_y > 0 then self.isFalling = true end
         self.pos.y = self.pos.y + self.velocity_y * dt
       end
 end
@@ -160,14 +201,16 @@ local temp = 0
 local chrono = 30
 local up = 8
 local montee = false
-
+  --==============================================================
+  --            [RAINBOW_CLIMB]
+  --==============================================================
 --La fonction rainbowClimb pour faire monter le hero dans un arc-en-ciel
 function Player:rainbowClimb(dt)
   local circle = {}
   for i = 1,36 do
     local phi = 2 * math.pi * i / 36
     circle[#circle+1] = self.vec:rotated(phi)
-   -- print(circle[8])
+
   end
   if self.theresRainbow then
     up = 8
@@ -175,17 +218,17 @@ function Player:rainbowClimb(dt)
   end
   if self.onRainbow and not self.theresRainbow then
     chrono = chrono - 25
-
       if  chrono < 0  and self.dir == 1 then
         chrono = 30
-      if up < 18 and (not self.descenteRainbow1 and not self.descenteRainbow2)
+      if up < 14 and (not self.descenteRainbow1 and not self.descenteRainbow2)
         and self.onRainbow then
+       -- print(up)
         self.isStop = true
         local dx,dy = circle[up]:unpack()
         self.pos.x = self.pos.x + dx / (math.pi * 5)
         self.pos.y = self.pos.y + dy / (math.pi * 5)
         up = up + 1
-      elseif self.descenteRainbow1 and up < 28 and montee then
+      elseif self.descenteRainbow1 and up < 23 and montee then
         self.isStop = true
         local dx,dy = circle[up]:unpack()
         self.pos.x = self.pos.x + dx / (math.pi * 5)
@@ -196,7 +239,7 @@ function Player:rainbowClimb(dt)
         local dx,dy = circle[up]:unpack()
         self.pos.x = self.pos.x - dx / (math.pi * 5)
         self.pos.y = self.pos.y + dy / (math.pi * 5)
-        print(up)
+       -- print(up)
         up = up - 1
       else
         self.isStop = false
@@ -207,14 +250,14 @@ function Player:rainbowClimb(dt)
 
      if  chrono < 0  and self.dir == -1 then
         chrono = 30
-      if up < 18 and (not self.descenteRainbow1 and not self.descenteRainbow2 )
+      if up < 14 and (not self.descenteRainbow1 and not self.descenteRainbow2 )
         and self.onRainbow then
         self.isStop = true
         local dx,dy = circle[up]:unpack()
         self.pos.x = self.pos.x + dx / (math.pi * 5)
         self.pos.y = self.pos.y + dy / -(math.pi * 5)
         up = up + 1
-      elseif self.descenteRainbow1 and up < 28 and montee then
+      elseif self.descenteRainbow1 and up < 23 and montee then
         self.isStop = true
           local dx,dy = circle[up]:unpack()
           self.pos.x = self.pos.x + dx / (math.pi * 5)
@@ -222,7 +265,7 @@ function Player:rainbowClimb(dt)
         up = up + 1
       elseif self.descenteRainbow2 and up > 7 and montee then
         self.isStop = true
-        print(up)
+        --print(up)
           local dx,dy = circle[up]:unpack()
           self.pos.x = self.pos.x - dx / (math.pi * 5)
           self.pos.y = self.pos.y + dy / -(math.pi * 5)
@@ -233,7 +276,13 @@ function Player:rainbowClimb(dt)
       end
     end
 
-        if up == 28 then 
+
+          if up == 15 then
+            if self.descenteRainbow1 then
+             up = 18
+             end
+          end
+        if up == 23 then 
           self.descenteRainbow1 = false
           self.isStop = false
           self.onRainbow = false
@@ -253,6 +302,9 @@ function Player:rainbowClimb(dt)
 end
 
 function Player:collision(dt)
+  --==============================================================
+  --            [PLAYER_COLLISION]
+  --==============================================================
 
     local playerFilter = function(item,other)
       if other.type == "solid" then return 'slide' end
@@ -262,6 +314,7 @@ function Player:collision(dt)
       if other.type == "on_rainbow" then return 'cross' end
       if other.type == "rainbow_detector" then return 'cross' end
       if other.type == "rainbow_detector2" then return 'cross' end
+      if other.type == "end" then return 'cross' end
     end
 
     local goalX, goalY = self.pos.x, self.pos.y
@@ -273,15 +326,23 @@ function Player:collision(dt)
   if cols[i].other.type == "one_way_s"  then
      cols[i].other.type = "one_way"
   end
+        
+   if cols[i].other.type == "end" then
+   self.finDeLevel = true
+  print(self.finDeLevel)
+   end
   
         if (cols[i].other.type == "one_way" and
-            cols[i].normal.y == -1          and
-            math.ceil(self.pos.y + (self.height)) <= cols[i].other.y ) then 
+            cols[i].normal.y == -1         and
+            math.floor(self.pos.y + (self.height - 1)) <= cols[i].other.y ) and
+            not self.onRainbow then 
             cols[i].other.type = "one_way_s" 
+          self.isFalling = false
           self.velocity_y = 0
           self.boolJump = false
+          self.onRainbow = false
         elseif cols[i].other.type == "one_way" then
-             cols[i].other.type = "one_way"
+              cols[i].other.type = "one_way"
         end
 
         if (cols[i].other.type == "solid" and
@@ -289,42 +350,54 @@ function Player:collision(dt)
            (cols[i].other.type == "rainbow" and
             cols[i].normal.y == -1 ) then
           self.velocity_y = 0
+          self.isFalling = false
           self.boolJump = false
+          self.onRainbow = false
         end
 
-      if cols[i].other.type == "rainbow" then
+      if cols[i].other.type == "on_rainbow" and not self.onRainbow then
+        cols[i].other.type = "rainbow"
+    end
+
+
+      if cols[i].other.type == "rainbow" and not self.isFalling 
+      and not self.boolJump then
 
           if cols[i].normal.x == 1 then
            -- print("collision avec normal.x en 1 : "..temp)
             cols[i].other["type"] = "on_rainbow"
             self.onRainbow = true
 
-
           if cols[i].other.dir == 1 then 
+            -- --> create([]) and [] <-- direction
           -- detect 2
-          cols[i].other.detect2.pos = cols[i].other.detect2.ancienPos
+          local cloneDetect2 = cols[i].other.detect2.ancienPos:clone()
+          cols[i].other.detect2.pos = cloneDetect2
           cols[i].other.detect2.pos.x = (cols[i].other.detect2.pos.x + self.width) + cols[i].other.width - cols[i].other.detect2.width
            -- detect 1
-          cols[i].other.detect.pos = cols[i].other.detect.ancienPos
-          cols[i].other.detect.pos.x = cols[i].other.detect.pos.x + self.width/2
+           local cloneDetect1 = cols[i].other.detect.ancienPos:clone()
+          cols[i].other.detect.pos = cloneDetect1
+          cols[i].other.detect.pos.x = cols[i].other.detect.pos.x + self.width/2 - 8
+          cols[i].other.detect.pos.y = cols[i].other.detect.pos.y - 10
           elseif cols[i].other.dir == -1 then
-            
+            -- create([]) <-- and [] <-- direction
           -- detect 2
-          cols[i].other.detect2.pos = cols[i].other.detect2.ancienPos
+          local cloneDetect2 = cols[i].other.detect2.ancienPos:clone()
+          cols[i].other.detect2.pos = cloneDetect2
           cols[i].other.detect2.pos.x = (cols[i].other.detect2.pos.x - self.width) - cols[i].other.detect2.width
           -- detect 1
-          cols[i].other.detect.pos =  cols[i].other.detect.ancienPos
-          cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x - cols[i].other.width) - self.width - 4
-
+          local cloneDetect1 = cols[i].other.detect.ancienPos:clone()
+          cols[i].other.detect.pos = cloneDetect1
+          cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x - cols[i].other.width) - self.width - 17
+          cols[i].other.detect.pos.y = cols[i].other.detect.pos.y - 10
           end
 
           world:update(cols[i].other.detect,cols[i].other.detect.pos.x,cols[i].other.detect.pos.y,cols[i].other.detect.width,cols[i].other.detect.height)
           world:update(cols[i].other.detect2,cols[i].other.detect2.pos.x,cols[i].other.detect2.pos.y,cols[i].other.detect2.width,cols[i].other.detect2.height)
-            self.vec.x =   cols[i].other.width + 8--- self.width
-            self.vec.y =   cols[i].other.height - 16--- self.height
-            temp = temp + 1
+          -- direction <--
+            self.vec.x =   cols[i].other.width + 40--- self.width
+            self.vec.y =   cols[i].other.height - 2*2--- self.height
           end
-
 
 
           if cols[i].normal.x == -1 then
@@ -333,38 +406,58 @@ function Player:collision(dt)
             self.onRainbow = true
 
           if cols[i].other.dir == 1 then
+            -- --> create([]) and direction --> []
           -- detect 2
-          cols[i].other.detect2.pos = cols[i].other.detect2.ancienPos
+          local cloneDetect2 = cols[i].other.detect2.ancienPos:clone()
+          cols[i].other.detect2.pos = cloneDetect2
           cols[i].other.detect2.pos.x = (cols[i].other.detect2.pos.x + self.width)
           -- detect 1
-          cols[i].other.detect.pos = cols[i].other.detect.ancienPos
-          cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x + self.width) + 4
-          elseif cols[i].other.dir == -1 then
+          local cloneDetect1 = cols[i].other.detect.ancienPos:clone()
+          cols[i].other.detect.pos = cloneDetect1
+          cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x + self.width) + 18
+          cols[i].other.detect.pos.y = cols[i].other.detect.pos.y - 10
+        elseif cols[i].other.dir == -1 then
+            --  create([]) <-- and direction --> []
         -- detect 2
-            cols[i].other.detect2.pos = cols[i].other.detect2.ancienPos
+        local cloneDetect2 = cols[i].other.detect2.ancienPos:clone()
+            cols[i].other.detect2.pos = cloneDetect2
             cols[i].other.detect2.pos.x = (cols[i].other.detect2.pos.x - self.width) - ( cols[i].other.width)
         -- detect 1
-            cols[i].other.detect.pos =  cols[i].other.detect.ancienPos
-            cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x - cols[i].other.width) - self.width
-
+        local cloneDetect1 = cols[i].other.detect.ancienPos:clone()
+            cols[i].other.detect.pos = cloneDetect1
+            cols[i].other.detect.pos.x = (cols[i].other.detect.pos.x - cols[i].other.width) - self.width + 18
+            cols[i].other.detect.pos.y = cols[i].other.detect.pos.y - 10
           end
 
 
           world:update(cols[i].other.detect,cols[i].other.detect.pos.x,cols[i].other.detect.pos.y,cols[i].other.detect.width,cols[i].other.detect.height)
           world:update(cols[i].other.detect2,cols[i].other.detect2.pos.x,cols[i].other.detect2.pos.y,cols[i].other.detect2.width,cols[i].other.detect2.height)
-            self.vec.x =   -cols[i].other.width - 8--- self.width
-            self.vec.y =   cols[i].other.height - 32--- self.height
-            temp = temp + 1
+          -- direction -->
+            self.vec.x =   -cols[i].other.width - 35--- self.width
+            self.vec.y =   cols[i].other.height - 2*42--- self.height
           end
+      
+      elseif (cols[i].other.type == "rainbow" and  (self.isFalling ) or
+       cols[i].other.type == "on_rainbow" and  (self.isFalling ))  then
+      cols[i].other.detect.type = ""
+      cols[i].other.detect2.type = ""
+      cols[i].other.type = "rainbow_bullet"
+      cols[i].other:breaking()
+      self.onRainbow = false
+      local newX,newY,newWidth,newHeight = cols[i].other.pos.x,cols[i].other.pos.y - 25,cols[i].other.width,(hauteur - cols[i].other.height)
+      world:update(cols[i].other,newX,newY,newWidth,newHeight)
       end
 
-          if cols[i].other.type == "rainbow_detector" and montee then
-          --print("detection")
+          if cols[i].other.type == "rainbow_detector" and montee and (not self.isFalling or not self.boolJump) then
           self.descenteRainbow1 = true
           self.descenteRainbow2 = false
-        elseif cols[i].other.type == "rainbow_detector2" and montee then
+        elseif cols[i].other.type == "rainbow_detector2" and montee and (not self.isFalling or not self.boolJump) then
           self.descenteRainbow2 = true
           self.descenteRainbow1 = false
+        elseif (cols[i].other.type == "rainbow_detector2" and (self.isFalling)) or
+        (cols[i].other.type == "rainbow_detector1" and (self.isFalling)) then
+          self.onRainbow = false
+          cols[i].other.type = ""
         end
 
 --      for k,v in pairs (cols[i].other) do
@@ -372,7 +465,9 @@ function Player:collision(dt)
 --      end
 --    print ('collided with' .. tostring(cols[i].other))
   end
-
+  --==============================================================
+  --            [DETECTOR_PLAYER_COLLISION]
+  --==============================================================
     local detectorFilter = function(item,other)
       if other.type == "solid" then return 'slide' end
       if other.type == "one_way" then return 'cross' end
@@ -395,27 +490,42 @@ function Player:collision(dt)
         self.theresRainbow = false
       end
     end
-
+    
+    --[[
+    local goalX, goalY = self.detect2.pos.x, self.detect2.pos.y
+    local actualX, actualY, cols, len = world:move(self.detect2,goalX, goalY,detectorFilter)
+    self.detect2.pos.x,self.detect2.pos.y = actualX,actualY
+    self.detection_descente = false
+    
+    for i = 1,len do
+    
+      if cols[i].other.type == "rainbow" or cols[i].other.type == "on_rainbow" then
+  --        self.detection_descente = true
+      end
+    end 
+    --]]
+    
    end
 
 
 
 function Player:draw()
     local s = self
-    love.graphics.draw(s.img,s.pos.x,s.pos.y,0,1,1,s.ox,s.oy)
+    love.graphics.draw(s.img,s.pos.x,s.pos.y,0,s.dir,1,s.ox,s.oy)
 
     if self.creerRainbow then
       for n = 1,#s.list_rainbow do
         local r = s.list_rainbow[n]
         local b = s.list_rainbow[n].bullet
+        love.graphics.draw(r.img,r.pos.x - s.width/2,r.pos.y,0,1,1)
+        love.graphics.setColor(255,255,255,255)
         love.graphics.translate(r.pos.x + r.width/2,r.pos.y + r.height)
         if b.display then
         love.graphics.draw(b.img,b.vec.x,b.vec.y,0,1,1)
         end
         love.graphics.translate(-r.pos.x - r.width/2,-r.pos.y - r.height)
-        love.graphics.setColor(0,0,255,200)
-        love.graphics.draw(r.img,r.pos.x - s.width/2,r.pos.y,0,1,1)
-        love.graphics.setColor(255,255,255,255)
+      --  love.graphics.setColor(0,0,255,200)
+
       end
     end
 

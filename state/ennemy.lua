@@ -13,7 +13,7 @@ local sprite = {}
     end
   end
 
-  function Ennemy:initialize()
+  function Ennemy:initialize(pId)
     for n = #Ennemy.list_ennemy, 1,-1 do
       local sprite = Ennemy.list_ennemy[n]
       self[n] = {
@@ -32,6 +32,7 @@ local sprite = {}
       boolJump = false,
       no_collision = true,
       display = true,
+      id = pId,
       }
       world:add(self[n],self[n].pos.x,self[n].pos.y,self[n].width,self[n].height)
       end
@@ -96,6 +97,7 @@ local trace = false
               if other.type == "one_way_s" then return 'slide' end
               if other.type == "change_direction" then return 'slide' end
               if other.type == "bullet" then return 'cross' end
+              if other.type == "rainbow_bullet" then return 'cross' end
               end
       e.no_collision = true
 
@@ -162,7 +164,8 @@ local trace = false
                cols.other.type == "one_way_s") and
                cols.normal.y == -1 then
             end
-            if cols.other.type == "bullet" then
+            if  (cols.other.type == "bullet" or
+                cols.other.type == "rainbow_bullet") then
               e.display = false
             end
       end
@@ -176,7 +179,7 @@ end
   function Ennemy:draw()
     for n = #self,1,-1 do
       local s = self[n]
-      love.graphics.draw(s.img,s.pos.x,s.pos.y,0,1,1,s.ox,s.oy)
+      love.graphics.draw(s.img,s.pos.x,s.pos.y,0,s.dir,1,s.ox,s.oy)
     end
   end
 

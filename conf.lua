@@ -1,6 +1,6 @@
 function love.conf(t)
-  t.window.width = 1024
-  t.window.height = 768
-  t.window.title = "Clone rainbow island by kanatos 2016"
+  t.window.width = 368
+  t.window.height = 702
+  t.window.title = "Coco climber by kanatos 2016"
   t.identity = "clone rainbow island "
 end
